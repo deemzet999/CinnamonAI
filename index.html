@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>CinnamonAI - OpenAI Powered</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    color: #3c3c3c;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .container {
+    background: #fff;
+    max-width: 400px;
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    padding: 2rem 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+  }
+  h1 {
+    margin: 0 0 0.5rem;
+    color: #ef5b5b;
+    font-weight: 700;
+    font-size: 2.4rem;
+    text-align: center;
+    letter-spacing: 0.1rem;
+  }
+  p.subtitle {
+    margin: 0 0 1.5rem;
+    text-align: center;
+    color: #777;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  textarea {
+    resize: none;
+    border-radius: 10px;
+    border: 1.5px solid #ef5b5b;
+    padding: 1rem;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    height: 120px;
+    transition: border-color 0.3s ease;
+    outline-offset: 2px;
+    outline-color: transparent;
+  }
+  textarea:focus {
+    border-color: #ff7f7f;
+    outline-color: #ff7f7f;
+  }
+  button {
+    margin-top: 1.25rem;
+    background-color: #ef5b5b;
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 1.25rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:disabled {
+    background-color: #f4b3b3;
+    cursor: not-allowed;
+  }
+  button:hover:not(:disabled) {
+    background-color: #ff7f7f;
+  }
+  .output-container {
+    margin-top: 1.75rem;
+    border-radius: 10px;
+    padding: 1rem;
+    background-color: #fff4f4;
+    min-height: 120px;
+    font-size: 1rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    color: #5a1a1a;
+    box-shadow: inset 0 0 10px #f9caca;
+  }
+  @media (max-width: 400px) {
+    body, html {
+      padding: 10px;
+      height: 100vh;
+    }
+    .container {
+      padding: 1.5rem 1.75rem 2.5rem;
+      max-width: 100%;
+      box-shadow: none;
+      border-radius: 0;
+      height: 100vh;
+      justify-content: flex-start;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container" role="main">
+  <h1>CinnamonAI</h1>
+  <p class="subtitle">OpenAI powered assistant for your creativity and productivity.</p>
+  <textarea aria-label="Input prompt to CinnamonAI" placeholder="Type your prompt here..." id="inputPrompt"></textarea>
+  <button id="submitBtn" type="button" aria-live="polite">Ask CinnamonAI</button>
+  <div id="output" class="output-container" aria-live="polite" aria-atomic="true"></div>
+</div>
+
+<script>
+(() => {
+  const input = document.getElementById('inputPrompt');
+  const button = document.getElementById('submitBtn');
+  const output = document.getElementById('output');
+
+  // OpenAI API URL and key placeholder - user should replace the API key with their own
+  const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+  // Remember to replace 'YOUR_OPENAI_API_KEY' with your actual OpenAI API key
+  const API_KEY = 'dgl2oquk5hmu4lm94npvcormitmx1fu8';
+
+  async function callOpenAI(prompt) {
+    try {
+      const response = await fetch(OPENAI_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 250,
+          temperature: 0.7,
+          n:1,
+          stream: false,
+          stop: null
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`API error ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+      if (data.choices && data.choices.length > 0) {
+        return data.choices[0].message.content.trim();
+      } else {
+        throw new Error('Unexpected API response structure.');
+      }
+    } catch (error) {
+      return `Error: ${error.message}`;
+    }
+  }
+
+  button.addEventListener('click', async () => {
+    const prompt = input.value.trim();
+    if (!prompt) {
+      output.textContent = "Please enter a prompt to ask CinnamonAI.";
+      return;
+    }
+    button.disabled = true;
+    output.textContent = 'CinnamonAI is thinking...';
+    const answer = await callOpenAI(prompt);
+    output.textContent = answer;
+    button.disabled = false;
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      button.click();
+    }
+  });
+})();
+</script>
+</body>
+</html>
+
+```
